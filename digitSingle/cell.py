@@ -5,7 +5,9 @@ class SudokuCell:
         self.grid = grid
         self.column = column
         self.row = row
-        self.value = value 
+        self.value = value
+        if not self.known:
+            self.possibilies = [1,2,3,4,5,6,7,8,9]
 
     def showPossibilities(self):
         print(self.possibilities)

@@ -102,4 +102,18 @@ class SudokuGrid:
                     for val in possibleValues:
                         if val not in cell.possibilites:
                             cell.possibilites.append(val)
-                
+
+    def updateOptions(self):
+        for cell in self.cells:
+            if cell.known:
+                continue
+            for cell2 in self.cells:
+                if cell == cell2:
+                    continue
+                if cell.grid == cell2.grid or cell.column == cell2.column or cell.row ==cell2.row:
+                    if cell2.known:
+                        cell.removePossibility(cell2.value)
+
+
+    def showCurrentGrid(self,curses):
+        #dosomeyhing 
