@@ -4,6 +4,7 @@ class SudokuGrid:
     def __init__(self,list):
         self.cells = []
         self.numSolved = 0
+        self.completed = False
         self.populateGrid(list)
         self.howCompleteAmI()
     
@@ -50,58 +51,26 @@ class SudokuGrid:
         return self.numSolved 
 
     def checkSingleOptions(self):
+        testSolve = True
         for cell in self.cells:
-            if len(cell.possibilities) == 1:
-                cell.value = cell.possibilites[0]
-                cell.known = True
+            if cell.known:
+                continue
+            else:
+                testSolve = False
+                if len(cell.possibilities) == 1:
+                    cell.value = cell.possibilities[0]
+                    cell.known = True
+        if testSolve == True:
+            self.completed = True
 
-    def updateCellOptions(self):
-        for i in range(1,10):
-            knownValues = []
-            for cell in self.cells:
-                if cell.grid == i:
-                    if cell.known:
-                        knownValues.append(cell.value)
-            possibleValues = [1,2,3,4,5,6,7,8,9]
-            for val in knownValues:
-                possibleValues.remove(val)
-            for cell in self.cells:
-                if cell.grid == i:
-                    for val in possibleValues:
-                        if val not in cell.possibilites:
-                            cell.possibilites.append(val)
-
-    def updateColumnOptions(self):
-        for i in range(1,10):
-            knownValues = []
-            for cell in self.cells:
-                if cell.column == i:
-                    if cell.known:
-                        knownValues.append(cell.value)
-            possibleValues = [1,2,3,4,5,6,7,8,9]
-            for val in knownValues:
-                possibleValues.remove(val)
-            for cell in self.cells:
-                if cell.column == i:
-                    for val in possibleValues:
-                        if val not in cell.possibilites:
-                            cell.possibilites.append(val)
-    
-    def updateRowOptions(self):
-        for i in range(1,10):
-            knownValues = []
-            for cell in self.cells:
-                if cell.row == i:
-                    if cell.known:
-                        knownValues.append(cell.value)
-            possibleValues = [1,2,3,4,5,6,7,8,9]
-            for val in knownValues:
-                possibleValues.remove(val)
-            for cell in self.cells:
-                if cell.row == i:
-                    for val in possibleValues:
-                        if val not in cell.possibilites:
-                            cell.possibilites.append(val)
+    def fetchValue(self,column,row):
+        for cell in self.cells:
+            if cell.column == column and cell.row == row:
+                if cell.value != 0:
+                    return cell.value
+                else:
+                    return "?"
+        return "?"
 
     def updateOptions(self):
         for cell in self.cells:
@@ -110,10 +79,29 @@ class SudokuGrid:
             for cell2 in self.cells:
                 if cell == cell2:
                     continue
-                if cell.grid == cell2.grid or cell.column == cell2.column or cell.row ==cell2.row:
+                if cell.grid == cell2.grid or cell.column == cell2.column or cell.row == cell2.row:
                     if cell2.known:
                         cell.removePossibility(cell2.value)
+            # print("possibilities: "+str(cell.possibilities))
+        self.checkSingleOptions()
 
+    def showCurrentGrid(self,screen,message = ""):
+        screen.clear()
+        for i in range(1,4):
+            screen.addstr(i,0,"{} {} {} | {} {} {} | {} {} {}"
+                .format(self.fetchValue(1,i),self.fetchValue(2,i),self.fetchValue(3,i),self.fetchValue(4,i),self.fetchValue(5,i),self.fetchValue(6,i),self.fetchValue(7,i),self.fetchValue(8,i),self.fetchValue(9,i)))
 
-    def showCurrentGrid(self,curses):
-        #dosomeyhing 
+        screen.addstr(4,0," - - -   - - -   - - -")
+
+        for i in range(4,8):
+            screen.addstr(i+1,0,"{} {} {} | {} {} {} | {} {} {}"
+                .format(self.fetchValue(1,i),self.fetchValue(2,i),self.fetchValue(3,i),self.fetchValue(4,i),self.fetchValue(5,i),self.fetchValue(6,i),self.fetchValue(7,i),self.fetchValue(8,i),self.fetchValue(9,i)))
+
+        screen.addstr(8,0," - - -   - - -   - - -")
+
+        for i in range(7,10):
+            screen.addstr(i+2,0,"{} {} {} | {} {} {} | {} {} {}"
+                .format(self.fetchValue(1,i),self.fetchValue(2,i),self.fetchValue(3,i),self.fetchValue(4,i),self.fetchValue(5,i),self.fetchValue(6,i),self.fetchValue(7,i),self.fetchValue(8,i),self.fetchValue(9,i)))
+        if message != "":
+            screen.addstr(12,0,message)
+        screen.refresh()

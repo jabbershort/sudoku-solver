@@ -1,6 +1,7 @@
 from cell import SudokuCell
 from grid import SudokuGrid
-
+import curses
+import time
 # grid, row column
 
 # grids= [[1,2,3],
@@ -23,9 +24,26 @@ grid = [
     [7,0,3,0,1,8,0,0,0]
     ]
 
+startTime = time.time()
+
+
+print("preparing to initialize screen...")
+screen = curses.initscr()
+print("Screen initialized.")
+screen.refresh()
+
 game = SudokuGrid(grid)
+game.showCurrentGrid(screen,"Initial Operation")
 
-game.updateCellPossibilities()
+count = 1
+while not game.completed:
+    game.updateOptions()
+    game.showCurrentGrid(screen,"Updating options, round {}".format(count))
+    count += 1
 
-print(game.cells[0].possibilities)
-        
+endTime = time.time()
+game.showCurrentGrid(screen,"Completed in {} seconds with {} cycles required.".format(round(endTime-startTime,4),count))
+print("The script solved the problem in {} seconds with {} cycles required.".format(round(endTime-startTime,4),count))
+
+curses.napms(10000)
+
