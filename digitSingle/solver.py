@@ -13,15 +13,15 @@ import time
 # columns = left is one, going right
 
 grid = [
-    [0,0,0,2,6,0,7,0,1],
-    [6,8,0,0,7,0,0,9,0],
-    [1,9,0,0,0,4,5,0,0],
-    [8,2,0,1,0,0,0,4,0],
-    [0,0,4,6,0,2,9,0,0],
-    [0,5,0,0,0,3,0,2,8],
-    [0,0,9,3,0,0,0,7,4],
-    [0,4,0,0,5,0,0,3,6],
-    [7,0,3,0,1,8,0,0,0]
+    [0,0,0,0,0,0,5,4,0],
+    [7,0,0,3,0,0,0,0,9],
+    [0,0,5,8,0,0,0,7,0],
+    [0,0,0,0,0,0,0,0,0],
+    [0,2,0,0,8,0,0,0,7],
+    [9,0,0,6,0,0,0,0,1],
+    [0,0,9,0,2,0,1,0,4],
+    [5,0,0,0,4,0,0,0,0],
+    [6,0,0,0,1,0,0,0,8]
     ]
 
 startTime = time.time()
@@ -36,9 +36,15 @@ game = SudokuGrid(grid)
 game.showCurrentGrid(screen,"Initial Operation")
 
 count = 1
+previousPC = 0
+completionPC = 0
 while not game.completed:
     game.updateOptions()
-    game.showCurrentGrid(screen,"Updating options, round {}".format(count))
+    # previousPC = completionPC
+    completionPC = round((game.howCompleteAmI()/(9*9))*100,1)
+    # if not completionPC > previousPC:
+    #     break
+    game.showCurrentGrid(screen,"Updating options, round {}, {}% complete.".format(count,completionPC))
     count += 1
 
 endTime = time.time()

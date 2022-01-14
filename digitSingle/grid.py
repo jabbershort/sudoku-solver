@@ -50,7 +50,7 @@ class SudokuGrid:
                 self.numSolved += 1
         return self.numSolved 
 
-    def checkSingleOptions(self):
+    def checkAllCells(self):
         testSolve = True
         for cell in self.cells:
             if cell.known:
@@ -72,18 +72,38 @@ class SudokuGrid:
                     return "?"
         return "?"
 
+    def analyseCell(self):
+        for cell in (cell for cell in self.cells if cell.known == False):
+            self.analyseCell(cell)
+    
+    def analyseCell(self,cell):
+        if cell.known:
+            return
+        else:
+            columnPoss = []
+            cellPoss = []
+            rowPoss = []
+            #check possibilities
+            #check other uknowns in cell
+            #check other unknowns in column
+            #check other unknowns in row
+
+    def updateOptions(self,cell):
+        for cell2 in self.cells:
+            if cell == cell2:
+                    continue
+            if cell.grid == cell2.grid or cell.column == cell2.column or cell.row == cell2.row:
+                if cell2.known:
+                    cell.removePossibility(cell2.value)
+            else:
+                continue
+
     def updateOptions(self):
         for cell in self.cells:
             if cell.known:
                 continue
-            for cell2 in self.cells:
-                if cell == cell2:
-                    continue
-                if cell.grid == cell2.grid or cell.column == cell2.column or cell.row == cell2.row:
-                    if cell2.known:
-                        cell.removePossibility(cell2.value)
-            # print("possibilities: "+str(cell.possibilities))
-        self.checkSingleOptions()
+            self.updateOptions(cell)
+        self.checkAllCells()
 
     def showCurrentGrid(self,screen,message = ""):
         screen.clear()
