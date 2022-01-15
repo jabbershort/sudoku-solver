@@ -6,6 +6,7 @@ class SudokuCell:
         self.column = column
         self.row = row
         self.value = value
+        self.id = "{}-{}-{}".format(grid,row,column)
         if not self.known:
             self.possibilities = [1,2,3,4,5,6,7,8,9]
 
@@ -19,6 +20,9 @@ class SudokuCell:
     def removePossibility(self,value: int):
         if value in self.possibilities:
             self.possibilities.remove(value)
+        if len(self.possibilities) == 1:
+            self.known = True
+            self.value = self.possibilities[0]
 
 
         
