@@ -1,4 +1,4 @@
-from cell import SudokuCell
+from box import SudokuBox
 
 class SudokuGrid:
     def __init__(self,list):
@@ -7,6 +7,7 @@ class SudokuGrid:
         self.completed = False
         self.populateGrid(list)
         self.howCompleteAmI()
+
     
     def populateGrid(self,list):
         for i in range (0,9):
@@ -16,31 +17,31 @@ class SudokuGrid:
                     known = True
                 else:
                     known = False
-                column = j+1
-                row = i+1
+                column = j
+                row = i
 
                 if i < 3:
                     if j <3:
-                        grid = 1
+                        grid = 0
                     elif j < 6:
-                        grid = 2
+                        grid = 1
                     else:
-                        grid = 3
+                        grid = 2
                 elif i < 6:
                     if j <3:
-                        grid = 4
+                        grid = 3
                     elif j < 6:
-                        grid = 5
+                        grid = 4
                     else:
-                        grid = 6
+                        grid = 5
                 else:
                     if j <3:
-                        grid = 7
+                        grid = 6
                     elif j < 6:
-                        grid = 8
+                        grid = 7
                     else:
-                        grid = 9
-                cell = SudokuCell(known,grid,column,row,value)
+                        grid = 8
+                cell = SudokuBox(known,grid,column,row,value)
                 self.cells.append(cell)
 
     def howCompleteAmI(self):
@@ -50,19 +51,6 @@ class SudokuGrid:
                 self.numSolved += 1
         return self.numSolved 
 
-    def checkAllCells(self):
-        testSolve = True
-        for cell in self.cells:
-            if cell.known:
-                continue
-            else:
-                testSolve = False
-                if len(cell.possibilities) == 1:
-                    cell.value = cell.possibilities[0]
-                    cell.known = True
-        if testSolve == True:
-            self.completed = True
-
     def fetchValue(self,column,row):
         for cell in self.cells:
             if cell.column == column and cell.row == row:
@@ -71,129 +59,63 @@ class SudokuGrid:
                 else:
                     return "?"
         return "?"
-
-    def analyseCells(self):
-        for cell in (cell for cell in self.cells if cell.known == False):
-            self.analyseCell(cell)
-        for i in range(1,10):
-            self.analyseGrid(i)
-            self.analyseCol(i)
-            self.analyseRow(i)
-        self.checkAllCells()
     
-    def analyseCell(self,cell):
-        if cell.known:
-            return
-        else:
-            otherPoss = []
-            self.updateOption(cell)
-            for cell2 in (cell2 for cell2 in self.cells if cell2.known == False):
-                if cell.id == cell2.id:
-                    continue
-                if cell2.column == cell.column or cell.row == cell2.row or cell.grid == cell2.grid:
-                    for poss in cell2.possibilities:
-                        otherPoss.append(poss)
-            
-            otherPoss.sort()
-            for poss in cell.possibilities:
-                if poss in otherPoss:
-                    continue
-                else:
-                    cell.known = True
-                    cell.value = poss
-                    return
+    def getValue(self,row,column):
+        for cell in self.cells:
+            if cell.column == column and cell.row == row:
+                return cell.value
+    
+    def setValue(self,row,column,val):
+        for cell in self.cells:
+            if cell.column == column and cell.row == row:
+                cell.value = val
 
-    def analyseRow(self,row):
-        opt = []
-        for cell in (cell for cell in self.cells if cell.row == row and cell.known == False):
-            for pos in cell.possibilities:
-                opt.append(pos)
-        opt.sort()
-
-        for i in range(1,10):
-            if opt.count(i) == 1:
-                for cell in (cell for cell in self.cells if cell.row == row and cell.known == False):
-                    if i in cell.possibilities:
-                        cell.known = True
-                        cell.value = i
-        
-    def analyseCol(self,col):
-        opt = []
-        for cell in (cell for cell in self.cells if cell.column == col and cell.known == False):
-            for pos in cell.possibilities:
-                opt.append(pos)
-        opt.sort()
-
-        for i in range(1,10):
-            if opt.count(i) == 1:
-                for cell in (cell for cell in self.cells if cell.column == col and cell.known == False):
-                    if i in cell.possibilities:
-                        cell.known = True
-                        cell.value = i
-
-    def analyseGrid(self,grid):
-        opt = []
-        for cell in (cell for cell in self.cells if cell.grid == grid and cell.known == False):
-            for pos in cell.possibilities:
-                opt.append(pos)
-        opt.sort()
-        for i in range(1,10):
-            if opt.count(i) == 1:
-                for cell in (cell for cell in self.cells if cell.grid == grid and cell.known == False):
-                    if i in cell.possibilities:
-                        cell.known = True
-                        cell.value = i 
-
-
-    def updateOption(self,cell):
-        for cell2 in self.cells:
-            if cell == cell2:
-                    continue
-            if cell.grid == cell2.grid or cell.column == cell2.column or cell.row == cell2.row:
-                if cell2.known:
-                    cell.removePossibility(cell2.value)
-            else:
-                continue
-
-    def updateOptions(self):
-        for cell in (cell for cell in self.cells if cell.known == False):
-            self.updateOption(cell)
-        self.checkAllCells()
+    def getResult(self):
+        result = []
+        for i in range(0,9):
+            row = []
+            for j in range(0,9):
+                for cell in self.cells:
+                    if cell.row == i and cell.column == j:
+                        row.append(cell.value)
+            result.append(row)
+        return result
 
     def showCurrentGrid(self,screen,message = ""):
         screen.clear()
-        for i in range(1,4):
-            screen.addstr(i,0,"{} {} {} | {} {} {} | {} {} {}"
-                .format(self.fetchValue(1,i),self.fetchValue(2,i),self.fetchValue(3,i),self.fetchValue(4,i),self.fetchValue(5,i),self.fetchValue(6,i),self.fetchValue(7,i),self.fetchValue(8,i),self.fetchValue(9,i)))
+        for i in range(0,3):
+            screen.addstr(i+1,0,"{} {} {} | {} {} {} | {} {} {}"
+                .format(self.fetchValue(0,i),self.fetchValue(1,i),self.fetchValue(2,i),self.fetchValue(3,i),self.fetchValue(4,i),self.fetchValue(5,i),self.fetchValue(6,i),self.fetchValue(7,i),self.fetchValue(8,i)))
 
         screen.addstr(4,0," - - -   - - -   - - -")
 
-        for i in range(4,8):
-            screen.addstr(i+1,0,"{} {} {} | {} {} {} | {} {} {}"
-                .format(self.fetchValue(1,i),self.fetchValue(2,i),self.fetchValue(3,i),self.fetchValue(4,i),self.fetchValue(5,i),self.fetchValue(6,i),self.fetchValue(7,i),self.fetchValue(8,i),self.fetchValue(9,i)))
+        for i in range(3,7):
+            screen.addstr(i+2,0,"{} {} {} | {} {} {} | {} {} {}"
+                .format(self.fetchValue(0,i),self.fetchValue(1,i),self.fetchValue(2,i),self.fetchValue(3,i),self.fetchValue(4,i),self.fetchValue(5,i),self.fetchValue(6,i),self.fetchValue(7,i),self.fetchValue(8,i)))
 
         screen.addstr(8,0," - - -   - - -   - - -")
 
-        for i in range(7,10):
-            screen.addstr(i+2,0,"{} {} {} | {} {} {} | {} {} {}"
-                .format(self.fetchValue(1,i),self.fetchValue(2,i),self.fetchValue(3,i),self.fetchValue(4,i),self.fetchValue(5,i),self.fetchValue(6,i),self.fetchValue(7,i),self.fetchValue(8,i),self.fetchValue(9,i)))
+        for i in range(6,9):
+            screen.addstr(i+3,0,"{} {} {} | {} {} {} | {} {} {}"
+                .format(self.fetchValue(0,i),self.fetchValue(1,i),self.fetchValue(2,i),self.fetchValue(3,i),self.fetchValue(4,i),self.fetchValue(5,i),self.fetchValue(6,i),self.fetchValue(7,i),self.fetchValue(8,i)))
         if message != "":
             screen.addstr(12,0,message)
         screen.refresh()
 
-    def printFinalGrid(self):
-        for i in range(1,4):
+    def printFinalGrid(self,message=""):
+        for i in range(0,3):
             print("{} {} {} | {} {} {} | {} {} {}"
-                .format(self.fetchValue(1,i),self.fetchValue(2,i),self.fetchValue(3,i),self.fetchValue(4,i),self.fetchValue(5,i),self.fetchValue(6,i),self.fetchValue(7,i),self.fetchValue(8,i),self.fetchValue(9,i)))
+                .format(self.fetchValue(0,i),self.fetchValue(1,i),self.fetchValue(2,i),self.fetchValue(3,i),self.fetchValue(4,i),self.fetchValue(5,i),self.fetchValue(6,i),self.fetchValue(7,i),self.fetchValue(8,i)))
 
         print(" - - -   - - -   - - -")
 
-        for i in range(4,7):
+        for i in range(3,6):
             print("{} {} {} | {} {} {} | {} {} {}"
-                .format(self.fetchValue(1,i),self.fetchValue(2,i),self.fetchValue(3,i),self.fetchValue(4,i),self.fetchValue(5,i),self.fetchValue(6,i),self.fetchValue(7,i),self.fetchValue(8,i),self.fetchValue(9,i)))
+                .format(self.fetchValue(0,i),self.fetchValue(1,i),self.fetchValue(2,i),self.fetchValue(3,i),self.fetchValue(4,i),self.fetchValue(5,i),self.fetchValue(6,i),self.fetchValue(7,i),self.fetchValue(8,i)))
 
         print(" - - -   - - -   - - -")
 
-        for i in range(7,10):
+        for i in range(6,9):
             print("{} {} {} | {} {} {} | {} {} {}"
-                .format(self.fetchValue(1,i),self.fetchValue(2,i),self.fetchValue(3,i),self.fetchValue(4,i),self.fetchValue(5,i),self.fetchValue(6,i),self.fetchValue(7,i),self.fetchValue(8,i),self.fetchValue(9,i)))
+                .format(self.fetchValue(0,i),self.fetchValue(1,i),self.fetchValue(2,i),self.fetchValue(3,i),self.fetchValue(4,i),self.fetchValue(5,i),self.fetchValue(6,i),self.fetchValue(7,i),self.fetchValue(8,i)))
+        print(message)

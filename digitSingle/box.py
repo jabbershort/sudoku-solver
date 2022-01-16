@@ -1,12 +1,12 @@
-class SudokuCell:
-    def __init__(self,known: bool,grid: int,column: int,row: int,value: int):
+class SudokuBox:
+    def __init__(self,known: bool,box: int,column: int,row: int,value: int):
         self.known = known
         self.possibilities = []
-        self.grid = grid
+        self.box = box
         self.column = column
         self.row = row
         self.value = value
-        self.id = "{}-{}-{}".format(grid,row,column)
+        self.id = "{}-{}-{}".format(box,row,column)
         if not self.known:
             self.possibilities = [1,2,3,4,5,6,7,8,9]
 
