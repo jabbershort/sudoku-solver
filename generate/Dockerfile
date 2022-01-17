@@ -9,6 +9,8 @@ RUN apt-get update && \
 RUN wget --no-check-certificate https://qqwing.com/qqwing_1.3.4-1_amd64.deb
 RUN dpkg --install qqwing_1.3.4-1_amd64.deb
 
+RUN mkdir /data/
+
 ADD generate.py /generate.py
 
 CMD python3 /generate.py
