@@ -18,6 +18,19 @@ def chunks(lst, n):
     for i in range(0, len(lst), n):
         yield lst[i:i + n]
 
+def rowReduction(lst):
+    puzzle.append(lst[0:8])
+    puzzle.append(lst[9:17])
+    puzzle.append(lst[18:26])
+    puzzle.append(lst[27:35])
+    puzzle.append(lst[36:44])
+    puzzle.append(lst[45:53])
+    puzzle.append(lst[54:62])
+    puzzle.append(lst[63:71])
+    puzzle.append(lst[72:80])
+    return puzzle
+
+
 
 if __name__ == "__main__":
     for i in range(0,10):
