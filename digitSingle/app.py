@@ -1,9 +1,12 @@
 from box import SudokuBox
 from grid import SudokuGrid
-from solver import EliminationSolver, BackTracking
+from solver import EliminationSolver, LogicSolver, BackTracking
 import curses
 import time
-from examples import exampleGrids
+import json
+import random
+
+
 # grid, row column
 
 # grids= [[1,2,3],
@@ -14,38 +17,52 @@ from examples import exampleGrids
 # rows = top row is one, going down
 # columns = left is one, going right
 
+def loadExamples(num):
+    with open("E:\devops\sudoku-solver\generate\puzzles\puzzles.json") as f:
+        data = json.load(f)
+    puzzleNames = list(data.keys())
+    examples = {}
+    for i in range(num):
+        name = random.choice(puzzleNames)
+        examples[name] = data[name]
+    return examples
+
+def printCompletion(sudoku: SudokuGrid,solver,screen):
+    if sudoku.completed:
+        if sudoku.getResult() == examples[grid]['solution']:
+            solution = "correctly"
+        else:
+            solution ="incorrectly"
+        sudoku.showCurrentGrid(screen,"Completed {} in {} seconds.".format(solution,solver.timeTaken))
+        print("The script solved the {} problem {} {} in {} seconds.".format(examples[grid]['difficulty'],grid,solution,solver.timeTaken))
+        curses.napms(5000)
+
+    else:
+        sudoku.showCurrentGrid(screen,"Failed in {} seconds.".format(solver.timeTaken))
+        print("The script failed to solve the {} problem {} in {} seconds.".format(examples[grid]['difficulty'],grid,solver.timeTaken))
+        curses.napms(5000)
 
 
-if __name__ == "__main__":
-    startTime = time.time()
-    
-    
+if __name__ == "__main__":    
     print("preparing to initialize screen...")
     screen = curses.initscr()
     print("Screen initialized.")
     screen.refresh()
+    # screen = ""
     
+    examples = loadExamples(10)
 
-    for grid in exampleGrids:
-        if grid == "hard":
-            continue
-        sudoku = SudokuGrid(exampleGrids[grid]['problem'])
-        # solver = EliminationSolver(sudoku,screen)
-        solver = BackTracking(sudoku,screen)
+    # print(examples)
+    for grid in examples:
+        print("Attempting to solve {} problem: {}.".format(examples[grid]['difficulty'],grid))
+        sudoku = SudokuGrid(examples[grid]['problem'])
+        
+        #Elimination First
+        solver = LogicSolver(sudoku,screen)
         solver.solve()
 
-        if sudoku.getResult() == exampleGrids[grid]['solution']:
-            print("The result is correct!")
-        else:
-            print("The result is incorrect")
-    
         if sudoku.completed:
-            sudoku.printFinalGrid("Completed in {} seconds with {} cycles required.".format(solver.timeTaken,solver.solveCycle))
-            print("The script solved the problem in {} seconds with {} cycles required.".format(solver.timeTaken,solver.solveCycle))
+            printCompletion(sudoku,solver,screen)
+            continue
         
-        else:
-            endTime = time.time()
-            sudoku.printFinalGrid("Failed in {} seconds with {} cycles required.".format(solver.timeTaken,solver.solveCycle))
-            print("The script failed to solve the problem in {} seconds with {} cycles required.".format(solver.timeTaken,solver.solveCycle))
-        
-        time.sleep(1)
+        print("Failed to find solution!")

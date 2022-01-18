@@ -8,14 +8,15 @@ class EliminationSolver:
         self.screen = screen
         self.solveCycle = 0
 
-    def solve(self,cycleLimit = 1000):
+    def solve(self,cycleLimit = 20):
         self.cycleLimit = cycleLimit
         self.startTime = time.time()
         while not self.grid.completed:
             if self.solveCycle > self.cycleLimit:
                 break
             else:
-                self.analyseCells()
+                # self.analyseCells()
+                self.updateOptions()
                 completionPC = round((self.grid.howCompleteAmI()/(9*9))*100,1)
                 if self.screen != "":
                     self.grid.showCurrentGrid(self.screen,"Updating options, round {}, {}% complete.".format(self.solveCycle,completionPC))
@@ -36,7 +37,7 @@ class EliminationSolver:
                 continue
 
     def updateOptions(self):
-        for cell in (cell for cell in self.cells if cell.known == False):
+        for cell in (cell for cell in self.grid.cells if cell.known == False):
             self.updateOption(cell)
         self.checkAllCells()
 
@@ -127,23 +128,136 @@ class EliminationSolver:
         if testSolve == True:
             self.grid.completed = True
 
-class BackTracking:
-    def __init__(self,grid:SudokuGrid,screen):
+class LogicSolver:
+    def __init__(self,grid: SudokuGrid,screen="",maximumSolveCycles=10):
         self.grid = grid
         self.screen = screen
         self.solveCycle = 0
+        self.simpleEliminationSteps = 5
+        self.cycleLimit = maximumSolveCycles
+        self.currentCompletion = round(self.grid.howCompleteAmI()/(9*9),3)
+
+    def updateCells(self):
+        testSolve = True
+        for cell in self.grid.cells:
+            if cell.known:
+                continue
+            else:
+                
+                if len(cell.possibilities) == 1:
+                    cell.value = cell.possibilities[0]
+                    cell.known = True
+                # elif:
+                    # simple elimination needs something to check if there is only one cell in the row,column,grid that contains a particular possibility (even if there is more than one possibility)
+                else:
+                    testSolve = False
+                
+        if testSolve == True:
+            self.grid.completed = True
+
+    def simpleElimination(self):
+        for i in range(self.simpleEliminationSteps):
+            self.grid.showCurrentGrid(self.screen,"I'm currently {} complete having done {} cycles.".format(self.currentCompletion,self.solveCycle))
+            for cell in (cell for cell in self.grid.cells if cell.known == False):
+                for cell2 in (cell for cell in self.grid.cells if cell.known == True):
+                    if cell.box == cell2.box or cell.column == cell2.column or cell.row == cell2.row:
+                        cell.removePossibility(cell2.value)
+       
+        self.updateCells()
+
+
+    def nakedCandidates(self):
+        # https://www.sudokuwiki.org/Naked_Candidates
+        self.nakedPairs()
+
+    def nakedPairs(self):
+        for i in range(9):
+            self.grid.showCurrentGrid(self.screen,"I'm currently {} complete having done {} cycles.".format(self.currentCompletion,self.solveCycle))
+            row = [cell for cell in self.grid.cells if cell.row == i]
+            # print([cell.possibilities for cell in self.grid.cells if cell.row == i])
+            self.checkForPairs(row)
+            column = [cell for cell in self.grid.cells if cell.column == i]
+            self.checkForPairs(column)
+            # grid = [cell for cell in self.grid.cells if cell.box == i]
+            # self.checkForPairs(grid)
+        return
+
+    def checkForPairs(self,group):
+        pair = []
+        otherCells = group[:]
+        for cell1 in otherCells:
+            if len(cell1.possibilities) == 2:
+                pair = cell1.possibilities
+                for cell2 in (cell for cell in group if cell != cell1):
+                    if cell2.possibilities == pair:
+                        otherCells.remove(cell1)
+                        otherCells.remove(cell2)
+                        print("I found a pair {} between cell {} {} and cell {} {}.".format(pair,cell1.id,cell1.possibilities,cell2.id,cell2.possibilities))
+                        for cell3 in otherCells:
+                            if cell3.possibilities == pair:
+                                continue
+                            for i in pair:
+                                cell3.removePossibility(i)
+                        self.simpleElimination()
+                        # need something to then cross reference the grid/row/column (whiuchever is being notanalysed) and remove
+                        return
+        
+    def hiddenCandidates(self):
+        # https://www.sudokuwiki.org/Hidden_Candidates
+        self.grid = self.grid
+    
+    def intersectionRemoval(self):
+        # https://www.sudokuwiki.org/Intersection_Removal
+        self.grid = self.grid
+
+    def xWingStrat(self):
+        # https://www.sudokuwiki.org/X_Wing_Strategy
+        self.grid = self.grid
+    
+    def yWingStrat(self):
+        # https://www.sudokuwiki.org/Y_Wing_Strategy
+        self.grid = self.grid
+
+    def swordFish(self):
+        # https://www.sudokuwiki.org/Sword_Fish_Strategy
+        self.grid = self.grid
+
+    def xyzWing(self):
+        # https://www.sudokuwiki.org/XYZ_Wing
+        self.grid = self.grid
 
     def solve(self):
         self.startTime = time.time()
+        while self.solveCycle < self.cycleLimit:
+            if self.grid.completed:# or self.currentCompletion == self.grid.howCompleteAmI()/(9*9):
+                break
+            self.solveCycle += 1
+            self.currentCompletion = round(self.grid.howCompleteAmI()/(9*9),3)
+            self.simpleElimination()
+            # self.nakedCandidates()
 
+        self.endTime = time.time()
+        self.timeTaken = round(self.endTime - self.startTime,4)
+   
+
+    #somehow combine all candidate eliminators
+
+class BackTracking:
+    def __init__(self,grid:SudokuGrid,screen,cycleLimit=100000):
+        self.grid = grid
+        self.screen = screen
+        self.solveCycle = 0
+        self.cycleLimit = cycleLimit
+
+    def solve(self):
+        self.startTime = time.time()
         self.solveSudoku()
-
         self.endTime = time.time()
         self.timeTaken = round(self.endTime - self.startTime,4)
 
 
     def findNextCellToFill(self,i, j):
-        self.grid.showCurrentGrid(self.screen)
+        self.grid.showCurrentGrid(self.screen,"Attempting to solve, cycle: {}".format(self.solveCycle))
         for x in range(i,9):
                 for y in range(j,9):
                         if self.grid.getValue(x,y) == 0:
@@ -170,13 +284,18 @@ class BackTracking:
 
     def solveSudoku(self,i=0, j=0):
         self.solveCycle +=1
+        if self.solveCycle > self.cycleLimit:
+            return True
+            self.grid.completed = False
         i,j = self.findNextCellToFill(i, j)
         if i == -1:
-                return True
+            self.grid.completed = True
+            return True
         for e in range(1,10):
                 if self.isValid(i,j,e):
                     self.grid.setValue(i,j,e)
                     if self.solveSudoku(i, j):
+                        self.grid.completed = True
                         return True
                     # Undo the current cell for backtracking
                     self.grid.setValue(i,j,0)

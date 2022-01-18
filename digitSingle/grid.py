@@ -8,7 +8,6 @@ class SudokuGrid:
         self.populateGrid(list)
         self.howCompleteAmI()
 
-    
     def populateGrid(self,list):
         for i in range (0,9):
             for j in range(0,9):
@@ -81,7 +80,14 @@ class SudokuGrid:
             result.append(row)
         return result
 
+    def getCell(self,row,column):
+        for cell in (cell for cell in self.cells if cell.column == column and cell.row == row):
+            return cell
+
+
     def showCurrentGrid(self,screen,message = ""):
+        if screen == "":
+            return
         screen.clear()
         for i in range(0,3):
             screen.addstr(i+1,0,"{} {} {} | {} {} {} | {} {} {}"
