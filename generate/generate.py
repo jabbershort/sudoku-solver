@@ -1,6 +1,6 @@
 from dataclasses import replace
 from solve import findSolutions
-import subprocess, random, json
+import subprocess, json, uuid, random
 
 difficulties = ['simple','easy','intermediate','expert']
 
@@ -70,8 +70,8 @@ def rowReduction(lst):
 
 
 if __name__ == "__main__":
-    for i in range(0,10):
-        seed = random.randint(1,1000000)
+    for i in range(0,1000):
+        seed = str(uuid.uuid4())
         diff = random.choice(difficulties)
         print("Generating {} puzzle, reference: {}".format(diff,seed))
         puzzle = generatePuzzle(diff)
