@@ -69,6 +69,7 @@ class EliminationSolver:
                     continue
                 else:
                     cell.known = True
+                    cell.possibilities = []
                     cell.value = poss
                     return
 
@@ -87,6 +88,7 @@ class EliminationSolver:
                     if i in cell.possibilities:
                         cell.known = True
                         cell.value = i
+                        cell.possibiliites = []
         
     def analyseCol(self,col):
         opt = []
@@ -100,6 +102,7 @@ class EliminationSolver:
                 for cell in (cell for cell in self.grid.cells if cell.column == col and cell.known == False):
                     if i in cell.possibilities:
                         cell.known = True
+                        cell.possibilities = []
                         cell.value = i
 
     def analyseGrid(self,box):
@@ -124,6 +127,7 @@ class EliminationSolver:
                 testSolve = False
                 if len(cell.possibilities) == 1:
                     cell.value = cell.possibilities[0]
+                    cell.possibilities = []
                     cell.known = True
         if testSolve == True:
             self.grid.completed = True
@@ -145,6 +149,7 @@ class LogicSolver:
             else:
                 if len(cell.possibilities) == 1:
                     cell.value = cell.possibilities[0]
+                    cell.possibilities = []
                     cell.known = True
                 # elif self.hiddenSingle(cell):
                 #     continue
@@ -174,9 +179,13 @@ class LogicSolver:
         boxPossibilities = self.grid.getPossibilitiesBox(cell.box)
         
         for poss in cell.possibilities:
+            if cell.box == 0:
+                print("i'm looking at cell {} which has possibilities of {}".format(cell.id,str(cell.possibilities)))
+                print("The possibilities in the box are {}".format(str(boxPossibilities)))
             if rowPossibilities.count(poss) == 1 or colPossibilities.count(poss) == 1 or boxPossibilities.count(poss) == 1:
                 print("I'm looking for a hidden single in cell {} and found {}".format(cell.id,poss))
                 cell.value = poss
+                cell.possibilities = []
                 cell.known = True
                 return True
             else:

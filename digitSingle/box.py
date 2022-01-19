@@ -1,3 +1,6 @@
+from sys import settrace
+
+
 class SudokuBox:
     def __init__(self,known: bool,box: int,column: int,row: int,value: int):
         self.known = known
@@ -9,6 +12,8 @@ class SudokuBox:
         self.id = "{}-{}-{}".format(box,row,column)
         if not self.known:
             self.possibilities = [1,2,3,4,5,6,7,8,9]
+        else:
+            self.possibilities = [value]
 
     def showPossibilities(self):
         print(self.possibilities)
@@ -23,6 +28,7 @@ class SudokuBox:
         if len(self.possibilities) == 1:
             self.known = True
             self.value = self.possibilities[0]
+            self.possibilities = []
 
 
         
