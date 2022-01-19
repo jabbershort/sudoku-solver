@@ -50,6 +50,10 @@ class SudokuGrid:
                 self.numSolved += 1
         return self.numSolved 
 
+    def removePossibilityBox(self,box,num,cellIds):
+        for cell in (cell for cell in self.cells if cell.box == box and cell.id not in cellIds):
+            cell.removePossibility(num)        
+
     def fetchValue(self,column,row):
         for cell in self.cells:
             if cell.column == column and cell.row == row:
@@ -59,6 +63,27 @@ class SudokuGrid:
                     return "?"
         return "?"
     
+    def getPossibilitiesRow(self,row):
+        poss = []
+        for cell in (cell for cell in self.cells if cell.row == row):
+            for cellPoss in cell.possibilities:
+                poss.append(cellPoss)
+        return poss
+    
+    def getPossibilitiesColumn(self,column):
+        poss = []
+        for cell in (cell for cell in self.cells if cell.column == column):
+            for cellPoss in cell.possibilities:
+                poss.append(cellPoss)
+        return poss   
+
+    def getPossibilitiesBox(self,box):
+        poss = []
+        for cell in (cell for cell in self.cells if cell.box == box):
+            for cellPoss in cell.possibilities:
+                poss.append(cellPoss)
+        return poss   
+
     def getValue(self,row,column):
         for cell in self.cells:
             if cell.column == column and cell.row == row:

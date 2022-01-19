@@ -143,12 +143,11 @@ class LogicSolver:
             if cell.known:
                 continue
             else:
-                
                 if len(cell.possibilities) == 1:
                     cell.value = cell.possibilities[0]
                     cell.known = True
-                # elif:
-                    # simple elimination needs something to check if there is only one cell in the row,column,grid that contains a particular possibility (even if there is more than one possibility)
+                # elif self.hiddenSingle(cell):
+                #     continue
                 else:
                     testSolve = False
                 
@@ -165,6 +164,24 @@ class LogicSolver:
        
         self.updateCells()
 
+    def hiddenSingles(self):
+        for cell in (cell for cell in self.grid.cells if cell.known == False):
+            self.hiddenSingle(cell)
+
+    def hiddenSingle(self,cell):
+        rowPossibilities = self.grid.getPossibilitiesRow(cell.row)
+        colPossibilities = self.grid.getPossibilitiesColumn(cell.column)
+        boxPossibilities = self.grid.getPossibilitiesBox(cell.box)
+        
+        for poss in cell.possibilities:
+            if rowPossibilities.count(poss) == 1 or colPossibilities.count(poss) == 1 or boxPossibilities.count(poss) == 1:
+                print("I'm looking for a hidden single in cell {} and found {}".format(cell.id,poss))
+                cell.value = poss
+                cell.known = True
+                return True
+            else:
+                continue
+        return False
 
     def nakedCandidates(self):
         # https://www.sudokuwiki.org/Naked_Candidates
@@ -174,12 +191,9 @@ class LogicSolver:
         for i in range(9):
             self.grid.showCurrentGrid(self.screen,"I'm currently {} complete having done {} cycles.".format(self.currentCompletion,self.solveCycle))
             row = [cell for cell in self.grid.cells if cell.row == i]
-            # print([cell.possibilities for cell in self.grid.cells if cell.row == i])
-            self.checkForPairs(row)
             column = [cell for cell in self.grid.cells if cell.column == i]
+            self.checkForPairs(row)
             self.checkForPairs(column)
-            # grid = [cell for cell in self.grid.cells if cell.box == i]
-            # self.checkForPairs(grid)
         return
 
     def checkForPairs(self,group):
@@ -198,10 +212,12 @@ class LogicSolver:
                                 continue
                             for i in pair:
                                 cell3.removePossibility(i)
+                                # need something to then cross reference the grid/row/column (whiuchever is being notanalysed) and remove
+                                # self.grid.removePossibilityBox(cell1.box,i,[cell1.id,cell2.id])
                         self.simpleElimination()
-                        # need something to then cross reference the grid/row/column (whiuchever is being notanalysed) and remove
+                    
                         return
-        
+
     def hiddenCandidates(self):
         # https://www.sudokuwiki.org/Hidden_Candidates
         self.grid = self.grid
