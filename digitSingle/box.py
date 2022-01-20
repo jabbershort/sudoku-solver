@@ -24,11 +24,14 @@ class SudokuBox:
 
     def removePossibility(self,value: int):
         if value in self.possibilities:
-            self.possibilities.remove(value)
+            if len(self.possibilities) <= 1:
+                return
+            else:
+                self.possibilities.remove(value)
         if len(self.possibilities) == 1:
             self.known = True
             self.value = self.possibilities[0]
-            self.possibilities = []
+            self.possibilities = [self.value]
 
 
         

@@ -69,7 +69,7 @@ class EliminationSolver:
                     continue
                 else:
                     cell.known = True
-                    cell.possibilities = []
+                    cell.possibilities = [poss]
                     cell.value = poss
                     return
 
@@ -88,7 +88,7 @@ class EliminationSolver:
                     if i in cell.possibilities:
                         cell.known = True
                         cell.value = i
-                        cell.possibiliites = []
+                        cell.possibiliites = [i]
         
     def analyseCol(self,col):
         opt = []
@@ -102,7 +102,7 @@ class EliminationSolver:
                 for cell in (cell for cell in self.grid.cells if cell.column == col and cell.known == False):
                     if i in cell.possibilities:
                         cell.known = True
-                        cell.possibilities = []
+                        cell.possibilities = [i]
                         cell.value = i
 
     def analyseGrid(self,box):
@@ -116,6 +116,7 @@ class EliminationSolver:
                 for cell in (cell for cell in self.grid.cells if cell.box == box and cell.known == False):
                     if i in cell.possibilities:
                         cell.known = True
+                        cell.possibilities = [i]
                         cell.value = i 
 
     def checkAllCells(self):
@@ -127,7 +128,7 @@ class EliminationSolver:
                 testSolve = False
                 if len(cell.possibilities) == 1:
                     cell.value = cell.possibilities[0]
-                    cell.possibilities = []
+                    cell.possibilities = [cell.value]
                     cell.known = True
         if testSolve == True:
             self.grid.completed = True
@@ -149,13 +150,12 @@ class LogicSolver:
             else:
                 if len(cell.possibilities) == 1:
                     cell.value = cell.possibilities[0]
-                    cell.possibilities = []
+                    cell.possibilities = [cell.value]
                     cell.known = True
                 # elif self.hiddenSingle(cell):
                 #     continue
                 else:
                     testSolve = False
-                
         if testSolve == True:
             self.grid.completed = True
 
@@ -166,12 +166,13 @@ class LogicSolver:
                 for cell2 in (cell for cell in self.grid.cells if cell.known == True):
                     if cell.box == cell2.box or cell.column == cell2.column or cell.row == cell2.row:
                         cell.removePossibility(cell2.value)
-       
         self.updateCells()
+        self.grid.updatePossibilities()
 
     def hiddenSingles(self):
         for cell in (cell for cell in self.grid.cells if cell.known == False):
             self.hiddenSingle(cell)
+            self.simpleElimination()
 
     def hiddenSingle(self,cell):
         rowPossibilities = self.grid.getPossibilitiesRow(cell.row)

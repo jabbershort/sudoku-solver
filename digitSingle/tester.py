@@ -21,6 +21,5 @@ solver.simpleElimination()
 showEntireGrid(grid,"This is the grid after simple elimination")
 solver.nakedCandidates()
 showEntireGrid(grid,"This is the grid after naked Pairs")
-for i in range(1):
-    solver.hiddenSingles()
-    showEntireGrid(grid,"This is the grid after hidden singles, round {}".format(i))
+solver.hiddenSingles()
+showEntireGrid(grid,"This is the grid after hidden single")
