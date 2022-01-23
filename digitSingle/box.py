@@ -3,37 +3,28 @@ from sys import settrace
 
 class SudokuBox:
     def __init__(self,known: bool,box: int,column: int,row: int,value: int):
-        self._known = known
-        self.possibilities = []
+        self.known = known
+        self.options = []
         self.box = box
         self.column = column
         self.row = row
-        self._value = value
+        self.value = value
         self.id = "{}-{}-{}".format(box,row,column)
         if not self.known:
             self.options = [1,2,3,4,5,6,7,8,9]
         else:
             self.options = [value]
 
-    @property
-    def value(self):
-        return self._value
-
-    @property
-    def known(self):
-        return self._known
-
-    @value.setter
-    def value(self,newValue):
-        self._value = newValue
+    def setValue(self,newValue):
+        self.value = newValue
         self.options = [newValue]
-        self._known = True
+        self.known = True
         return True
 
 
     def checkCell(self):
         if len(self.options) == 1:
-            self.value(self.options[0])
+            self.setValue(self.options[0])
             return True
         else:
             return False
@@ -57,8 +48,8 @@ class SudokuBox:
                 self.options.remove(value)
                 return True
         if len(self.options) == 1:
-            self._value = self.options[0]
-            self._known = True
+            self.value = self.options[0]
+            self.known = True
             return True
 
 

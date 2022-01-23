@@ -7,7 +7,7 @@ def getPossibility(num,cell:SudokuBox):
             return str(cell.value)
         else:
             return " "
-    if num in cell.possibilities:
+    if num in cell.options:
         return str(num)
     return " "
 

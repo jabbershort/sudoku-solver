@@ -16,9 +16,8 @@ problem = [
  
 
 grid = SudokuGrid(problem)
+showEntireGrid(grid,"This is the grid after population")
 solver = LogicSolver(grid)
-solver.simpleElimination()
-showEntireGrid(grid,"This is the grid after simple elimination")
 solver.nakedCandidates()
 showEntireGrid(grid,"This is the grid after naked Pairs")
 solver.hiddenSingles()

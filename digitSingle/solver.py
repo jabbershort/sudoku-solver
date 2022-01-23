@@ -148,30 +148,17 @@ class LogicSolver:
         if testSolve == True:
             self.grid.completed = True
 
-    def simpleElimination(self):
-        for i in range(self.simpleEliminationSteps):
-            self.grid.showCurrentGrid(self.screen,"I'm currently {} complete having done {} cycles.".format(self.currentCompletion,self.solveCycle))
-            for cell in (cell for cell in self.grid.cells if cell.known == False):
-                for cell2 in (cell for cell in self.grid.cells if cell.known == True):
-                    if cell.box == cell2.box or cell.column == cell2.column or cell.row == cell2.row:
-                        cell.removePossibility(cell2.value)
-        self.updateCells()
-        self.grid.updatePossibilities()
-
     def hiddenSingles(self):
         for cell in (cell for cell in self.grid.cells if cell.known == False):
             self.hiddenSingle(cell)
-            self.simpleElimination()
+            self.grid.updatePossibilities()
 
     def hiddenSingle(self,cell):
         rowPossibilities = self.grid.getPossibilitiesRow(cell.row)
         colPossibilities = self.grid.getPossibilitiesColumn(cell.column)
         boxPossibilities = self.grid.getPossibilitiesBox(cell.box)
         
-        for poss in cell.possibilities:
-            if cell.box == 0:
-                print("i'm looking at cell {} which has possibilities of {}".format(cell.id,str(cell.options)))
-                print("The possibilities in the box are {}".format(str(boxPossibilities)))
+        for poss in cell.options:
             if rowPossibilities.count(poss) == 1 or colPossibilities.count(poss) == 1 or boxPossibilities.count(poss) == 1:
                 print("I'm looking for a hidden single in cell {} and found {}".format(cell.id,poss))
                 cell.value = poss
@@ -195,24 +182,19 @@ class LogicSolver:
 
     def checkForPairs(self,group):
         pair = []
-        otherCells = group[:]
-        for cell1 in otherCells:
+        for cell1 in group:
             if len(cell1.options) == 2:
                 pair = cell1.options
-                for cell2 in (cell for cell in group if cell != cell1):
-                    if cell2.options == pair:
-                        otherCells.remove(cell1)
-                        otherCells.remove(cell2)
+                for cell2 in (cell2 for cell2 in group if cell2.id != cell1.id):
+                    if cell2.options == pair and len(cell2.options) == 2:
                         print("I found a pair {} between cell {} {} and cell {} {}.".format(pair,cell1.id,cell1.options,cell2.id,cell2.options))
-                        for cell3 in otherCells:
+                        for cell3 in group:
                             if cell3.options == pair:
                                 continue
                             for i in pair:
                                 cell3.removePossibility(i)
                                 # need something to then cross reference the grid/row/column (whiuchever is being notanalysed) and remove
                                 self.grid.removePossibilityBox(cell1.box,i,[cell1.id,cell2.id])
-                        self.simpleElimination()
-                    
                         return
 
     def hiddenCandidates(self):

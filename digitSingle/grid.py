@@ -6,19 +6,21 @@ class SudokuGrid:
         self.numSolved = 0
         self.completed = False
         self.populateGrid(list)
+        self.updatePossibilities()
         self.howCompleteAmI()
 
     def updatePossibilities(self):
         for cell in self.cells:
             if cell.known:
-                return True
+                continue
             else:
                 for cell2 in (cell2 for cell2 in self.cells if cell2.known == True and cell.id != cell2.id):
                     if cell2.row == cell.row or cell2.column == cell.column or cell2.box == cell.box:
-                        attempt = cell.removePossibility(cell2.value)
-                        if not attempt:
-                            continue
-                
+                        cell.removePossibility(cell2.value)
+
+                # print("Cell {} has possibilities {}.".format(cell.id,cell.options))
+        for cell in self.cells:
+            cell.checkCell()
 
     def populateGrid(self,list):
         for i in range (0,9):
