@@ -11,11 +11,14 @@ class SudokuGrid:
     def updatePossibilities(self):
         for cell in self.cells:
             if cell.known:
-                cell.possibilities = [cell.value]
+                return True
             else:
                 for cell2 in (cell2 for cell2 in self.cells if cell2.known == True and cell.id != cell2.id):
                     if cell2.row == cell.row or cell2.column == cell.column or cell2.box == cell.box:
-                        cell.removePossibility(cell2.value)
+                        attempt = cell.removePossibility(cell2.value)
+                        if not attempt:
+                            continue
+                
 
     def populateGrid(self,list):
         for i in range (0,9):
@@ -75,21 +78,21 @@ class SudokuGrid:
     def getPossibilitiesRow(self,row):
         poss = []
         for cell in (cell for cell in self.cells if cell.row == row and cell.known == False):
-            for cellPoss in cell.possibilities:
+            for cellPoss in cell.options:
                 poss.append(cellPoss)
         return poss
     
     def getPossibilitiesColumn(self,column):
         poss = []
         for cell in (cell for cell in self.cells if cell.column == column and cell.known == False):
-            for cellPoss in cell.possibilities:
+            for cellPoss in cell.options:
                 poss.append(cellPoss)
         return poss   
 
     def getPossibilitiesBox(self,box):
         poss = []
         for cell in (cell for cell in self.cells if cell.box == box and cell.known == False):
-            for cellPoss in cell.possibilities:
+            for cellPoss in cell.options:
                 poss.append(cellPoss)
         return poss   
 
@@ -98,11 +101,6 @@ class SudokuGrid:
             if cell.column == column and cell.row == row:
                 return cell.value
     
-    def setValue(self,row,column,val):
-        for cell in self.cells:
-            if cell.column == column and cell.row == row:
-                cell.value = val
-
     def getResult(self):
         result = []
         for i in range(0,9):

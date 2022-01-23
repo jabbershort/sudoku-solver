@@ -60,17 +60,15 @@ class EliminationSolver:
                 if cell.id == cell2.id:
                     continue
                 if cell2.column == cell.column or cell.row == cell2.row or cell.box == cell2.box:
-                    for poss in cell2.possibilities:
+                    for poss in cell2.options:
                         otherPoss.append(poss)
             
             otherPoss.sort()
-            for poss in cell.possibilities:
+            for poss in cell.options:
                 if poss in otherPoss:
                     continue
                 else:
                     cell.known = True
-                    cell.possibilities = [poss]
-                    cell.value = poss
                     return
 
 
@@ -78,31 +76,27 @@ class EliminationSolver:
     def analyseRow(self,row):
         opt = []
         for cell in (cell for cell in self.grid.cells if cell.row == row and cell.known == False):
-            for pos in cell.possibilities:
+            for pos in cell.options:
                 opt.append(pos)
         opt.sort()
 
         for i in range(0,9):
             if opt.count(i) == 1:
                 for cell in (cell for cell in self.grid.cells if cell.row == row and cell.known == False):
-                    if i in cell.possibilities:
+                    if i in cell.options:
                         cell.known = True
-                        cell.value = i
-                        cell.possibiliites = [i]
-        
+
     def analyseCol(self,col):
         opt = []
         for cell in (cell for cell in self.grid.cells if cell.column == col and cell.known == False):
-            for pos in cell.possibilities:
+            for pos in cell.options:
                 opt.append(pos)
         opt.sort()
 
         for i in range(0,9):
             if opt.count(i) == 1:
                 for cell in (cell for cell in self.grid.cells if cell.column == col and cell.known == False):
-                    if i in cell.possibilities:
-                        cell.known = True
-                        cell.possibilities = [i]
+                    if i in cell.options:
                         cell.value = i
 
     def analyseGrid(self,box):
@@ -114,9 +108,8 @@ class EliminationSolver:
         for i in range(0,9):
             if opt.count(i) == 1:
                 for cell in (cell for cell in self.grid.cells if cell.box == box and cell.known == False):
-                    if i in cell.possibilities:
+                    if i in cell.options:
                         cell.known = True
-                        cell.possibilities = [i]
                         cell.value = i 
 
     def checkAllCells(self):
@@ -125,11 +118,10 @@ class EliminationSolver:
             if cell.known:
                 continue
             else:
-                testSolve = False
-                if len(cell.possibilities) == 1:
-                    cell.value = cell.possibilities[0]
-                    cell.possibilities = [cell.value]
-                    cell.known = True
+                if cell.checkCell():
+                    continue
+                else:
+                    testSolve = False
         if testSolve == True:
             self.grid.completed = True
 
@@ -148,14 +140,11 @@ class LogicSolver:
             if cell.known:
                 continue
             else:
-                if len(cell.possibilities) == 1:
-                    cell.value = cell.possibilities[0]
-                    cell.possibilities = [cell.value]
-                    cell.known = True
-                # elif self.hiddenSingle(cell):
-                #     continue
+                if cell.checkCell():
+                    continue
                 else:
                     testSolve = False
+                    continue
         if testSolve == True:
             self.grid.completed = True
 
@@ -181,13 +170,11 @@ class LogicSolver:
         
         for poss in cell.possibilities:
             if cell.box == 0:
-                print("i'm looking at cell {} which has possibilities of {}".format(cell.id,str(cell.possibilities)))
+                print("i'm looking at cell {} which has possibilities of {}".format(cell.id,str(cell.options)))
                 print("The possibilities in the box are {}".format(str(boxPossibilities)))
             if rowPossibilities.count(poss) == 1 or colPossibilities.count(poss) == 1 or boxPossibilities.count(poss) == 1:
                 print("I'm looking for a hidden single in cell {} and found {}".format(cell.id,poss))
                 cell.value = poss
-                cell.possibilities = []
-                cell.known = True
                 return True
             else:
                 continue
@@ -210,20 +197,20 @@ class LogicSolver:
         pair = []
         otherCells = group[:]
         for cell1 in otherCells:
-            if len(cell1.possibilities) == 2:
-                pair = cell1.possibilities
+            if len(cell1.options) == 2:
+                pair = cell1.options
                 for cell2 in (cell for cell in group if cell != cell1):
-                    if cell2.possibilities == pair:
+                    if cell2.options == pair:
                         otherCells.remove(cell1)
                         otherCells.remove(cell2)
-                        print("I found a pair {} between cell {} {} and cell {} {}.".format(pair,cell1.id,cell1.possibilities,cell2.id,cell2.possibilities))
+                        print("I found a pair {} between cell {} {} and cell {} {}.".format(pair,cell1.id,cell1.options,cell2.id,cell2.options))
                         for cell3 in otherCells:
-                            if cell3.possibilities == pair:
+                            if cell3.options == pair:
                                 continue
                             for i in pair:
                                 cell3.removePossibility(i)
                                 # need something to then cross reference the grid/row/column (whiuchever is being notanalysed) and remove
-                                # self.grid.removePossibilityBox(cell1.box,i,[cell1.id,cell2.id])
+                                self.grid.removePossibilityBox(cell1.box,i,[cell1.id,cell2.id])
                         self.simpleElimination()
                     
                         return
